@@ -17,6 +17,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
  */
 class Coach
 {
+
     protected $version;
     protected $filesystem;
 
