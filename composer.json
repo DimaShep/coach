@@ -1,6 +1,7 @@
 {
     "name": "shep/coach",
     "description": "My coach",
+    "license": "MIT",
     "authors": [
         {
             "name": "Dmitriy",
