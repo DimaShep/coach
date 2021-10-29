@@ -29,5 +29,6 @@
                 "Shep\\Coach\\CoachServiceProvider"
             ]
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
