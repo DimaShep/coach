@@ -135,7 +135,7 @@ class Coach
         $this->afterFormFields[$handler->getCodename()] = $handler;
 
         return $this;
-    }r
+    }
 
     public function formFields()
     {
