@@ -44,9 +44,10 @@
         </table>
 
     </div>
+    @include('coach::modal.delete')
 @stop
 
-@include('coach::modal.delete')
+
 @section('js')
 $(document).ready(function () {
     $('.select2').select2({ width: '500px'});

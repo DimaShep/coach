@@ -17,8 +17,9 @@
             </div>
         </div>
     </div>
+    @include('coach::modal.delete')
 @stop
 
-@include('coach::modal.delete')
+
 @section('js')
 @append

@@ -7,10 +7,10 @@
 @section('contents')
 
     Show {{$that->slug()}}
-
+    @include('coach::modal.delete')
 @stop
 
-@include('coach::modal.delete')
+
 
 @section('js')
 @append

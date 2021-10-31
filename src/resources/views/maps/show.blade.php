@@ -56,9 +56,10 @@
 
 
     <script src="{{ coach_asset('js/map.js') }}"></script>
+    @include('coach::modal.delete')
 @stop
 
-@include('coach::modal.delete')
+
 
 
 @section('css')

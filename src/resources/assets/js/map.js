@@ -246,7 +246,7 @@ class Circle
     showMenu(event)
     {
         $('.edit_task').remove();
-        let edit_task = $('<div class="edit_task" style="top:'+(event.originalEvent.clientY-25)+';left:'+event.originalEvent.clientX+';">' +
+        let edit_task = $('<div class="edit_task" style="top:'+(event.originalEvent.clientY-25)+'px;left:'+event.originalEvent.clientX+'px;">' +
             '<i class="fas fa-edit edit"></i>' +
             '<i class="fas fa-trash-alt delete"></i>' +
             '</div>')
