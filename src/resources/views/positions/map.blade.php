@@ -11,7 +11,7 @@
         <div class="col-md-1">
             <form method="post" id="form-add-new-task" action="{{route('api.coach.task.create',['position'=>$position->id])}}">
                 @csrf
-                <button id="add-new-task" title="{{__('coach::button.create')}}" class="btn btn-success btn-add-new">
+                <button id="add-new-task" style="margin: 5px !important;" title="{{__('coach::button.create')}}" class="btn btn-success btn-add-new">
                     <i class="fas fa-plus-circle"></i> <span>{{__('coach::button.create')}}</span>
                 </button>
             </form>

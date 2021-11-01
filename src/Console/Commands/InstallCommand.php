@@ -18,7 +18,7 @@ class InstallCommand extends Command
     use Seedable;
 
     protected $seedersPath = __DIR__.'/../../database/seeds/';
-
+    protected $assetsPath = __DIR__.'/../../resources/assets/';
     /**
      * The console command name.
      *
@@ -65,18 +65,25 @@ class InstallCommand extends Command
         $this->info('Publishing the Coach assets, database, and config files');
 
         //Publish only relevant resources on install
-        $tags = ['seeds', 'assets', 'public', 'config'];
+        $tags = ['seeds', 'public', 'config'];
 
         $this->call('vendor:publish', ['--provider' => CoachServiceProvider::class, '--tag' => $tags]);
 
         $this->info('Migrating the database tables into your application');
-      //  $this->call('migrate');
+        $this->call('migrate');
 
         $this->info('Dumping the autoloaded files and reloading all new files');
 
         $composer = $this->findComposer();
 
         $process = new Process($composer.' dump-autoload');
+        $process->setTimeout(null); //Setting timeout to null to prevent installation from stopping at a certain point in time
+        $process->setWorkingDirectory(base_path())->run();
+
+
+        $this->info('Adding the storage symlink to your public folder');
+        $public_assets = public_path()."/vendor/shep/coach";
+        $process = new Process('ln -s '.$this->assetsPath." ".$public_assets);
         $process->setTimeout(null); //Setting timeout to null to prevent installation from stopping at a certain point in time
         $process->setWorkingDirectory(base_path())->run();
 
@@ -103,12 +110,6 @@ class InstallCommand extends Command
 
         $this->info('Seeding data into the database');
         $this->seed('TDatabaseSeeder');
-
-//        $this->info('Setting up the hooks');
-//        $this->call('hook:setup');
-
-//        $this->info('Adding the storage symlink to your public folder');
-//        $this->call('storage:link');
 
         $this->info('Successfully installed Coach! Enjoy');
     }
