@@ -83,6 +83,7 @@ class InstallCommand extends Command
 
         $this->info('Adding the storage symlink to your public folder');
         $public_assets = public_path()."/vendor/shep/coach";
+        \File::makeDirectory($public_assets, $mode = 0777, true, true);
         $process = new Process('ln -s '.$this->assetsPath." ".$public_assets);
         $process->setTimeout(null); //Setting timeout to null to prevent installation from stopping at a certain point in time
         $process->setWorkingDirectory(base_path())->run();
