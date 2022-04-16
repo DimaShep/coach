@@ -19,7 +19,8 @@ Route::group(['prefix' => 'coach', 'as' => 'api.coach.'], function() {
     Route::post('task_update/{position}', $namespacePrefix.'ApiController@taskUpdate')->name('task.update');
     Route::post('task_line_delete/{position}', $namespacePrefix.'ApiController@taskLineDelete')->name('task_line.delete');
     Route::post('task_delete/{position}', $namespacePrefix.'ApiController@taskDelete')->name('task.delete');
-    Route::post('send_answer_test/{task}', $namespacePrefix.'ApiController@sendAnswerTest')->name('send_answer_test');
+    Route::post('send_answer_test/{task}/{position}', $namespacePrefix.'ApiController@sendAnswerTest')->name('send_answer_test');
     Route::post('/send_answer/{task}', $namespacePrefix.'ApiController@sendAnswer')->name('send_answer');
 
+    Route::post('uploader', $namespacePrefix.'UploaderController@upload')->name('uploader');
 });

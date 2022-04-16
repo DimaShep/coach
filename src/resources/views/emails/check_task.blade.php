@@ -1,1 +1,1 @@
-<h1>{{__('coach::emails.mentors_result_filed', ['user'=>$user->contact])}}: <a href="{{$url}}">{{$task->name}}</a></h1>
+<h1>{{__('coach::emails.check_task_title')}}: <a href="{{$url}}">{{$task->name}}</a></h1>

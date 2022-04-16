@@ -1,6 +1,7 @@
 <?php namespace Shep\Coach\Http\Controllers;
 
 
+use App\Jobs\SendUserSocket;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -28,7 +29,7 @@ class ApiController extends Controller
 
     public function taskCreate(Request $request, Position  $position)
     {
-        $task = Task::create(['name'=>'New Task', 'info'=>['text'=>0,'img'=>0,'video'=>0]]);
+        $task = Task::create(['name'=>'New Task', 'penalty'=>1, 'info'=>['text'=>0,'img'=>0,'video'=>0]]);
         $data = ['x' => 100, 'y' => 100, 'r' => 75];
         $position->tasks()->attach($task, ['data'=>$data]);
         return ['status'=>'success','tasks'=>$position->data($task->id)->get(), 'position'=>$position];
@@ -41,21 +42,29 @@ class ApiController extends Controller
         $results = [];
         foreach ($tasks as $task){
             $results[$task->id] = 0;
-
+            $res_parent = !$task->pivot->parent_id?null:$task->parent()->results($user_id)->orderByDesc('id')->first()->status;
             if($user_id) {
                 $res = $task->results($user_id)->orderByDesc('id')->first();
                 if ($res) {
                     $results[$task->id] = $res->status;
                 }
-                else if(!$task->pivot->parent_id || $task->pivot->parent_id && $results[$task->pivot->parent_id] == Result::STATUS_FINISHED_OK){
-                    $results[$task->id] = Result::STATUS_NEW;
+                else {
+
+                    if (!$task->pivot->parent_id || $res_parent && in_array($res_parent, [Result::STATUS_FINISHED_OK, Result::STATUS_CHECKED])) {
+                        $results[$task->id] = Result::STATUS_NEW;
+                    }
                 }
             }
-            else if(!$task->pivot->parent_id || $task->pivot->parent_id && $results[$task->pivot->parent_id] == Result::STATUS_FINISHED_OK){
+            else if(!$task->pivot->parent_id || $res_parent && in_array($res_parent,[Result::STATUS_FINISHED_OK, Result::STATUS_CHECKED])){
                 $results[$task->id] = Result::STATUS_NEW;
             }
         }
-        return ['status'=>'success','tasks'=> $tasks, 'results' => $results, 'position'=>$position];
+        $progress = null;
+        if($user_id) {
+            $progress = auth()->user()->getProcPositions();
+        }
+
+        return ['status'=>'success','tasks'=> $tasks, 'results' => $results, 'position'=>$position, 'progress'=>$progress];
     }
 
     public function taskUpdate(Request $request, Position  $position)
@@ -88,7 +97,7 @@ class ApiController extends Controller
 
     }
 
-    public function sendAnswerTest(Request $request, Task $task)
+    public function sendAnswerTest(Request $request, Task $task, Position $position)
     {
         $finished = false;
         $question_id = $request->get('question_id', 0);
@@ -97,19 +106,23 @@ class ApiController extends Controller
         $result = $task->results($user->id)->where('status', Result::STATUS_NEW)->first();
 
         if (!$result || $result->count() == 0) {
-            $result = $user->results()->create(['task_id' => $task->id]);
+            $result = $user->result()->create(['task_id' => $task->id]);
         }
 
         if ($task->type == Task::TYPE_TEST){
             $answers = $result->answers ?? [];
             $answers[$question_id]['answer'] = $answer;
             $answers[$question_id]['correct'] = $task->questions['questions'][$question_id]['correct_answer'] == $answer ? true : false;
-            $answers[$question_id]['time'] = strtotime(now()) - strtotime($request->get('start_question'));
+            $result->time +=  $answers[$question_id]['time'] = strtotime(now()) - strtotime($request->get('start_question'));
+
+        }
+        else if ($task->type == Task::TYPE_LESSON){
+            $result->time +=  $answers['time'] = strtotime(now())-strtotime($request->get('start_question'));
         }
         else {
             $answers['answer'] = $answer;
             $answers['correct'] = array_fill(0,count($task->questions['points']),0);
-            $answers['time'] = strtotime(now())-strtotime($request->get('start_question'));
+            $result->time +=  $answers['time'] = strtotime(now())-strtotime($request->get('start_question'));
         }
 
         if($task->type == Task::TYPE_VIDEO && $request->hasFile('video')){
@@ -125,8 +138,8 @@ class ApiController extends Controller
         if($task->type == Task::TYPE_TEST) {
             if (count($task->questions['questions']) == count($result->answers)) {
                 $finished = true;
-                $result->time = now()->diffInSeconds($result->created_at);
-                $count_answer = $task->results($user->id)->count();
+                //$result->time = $result->time = now()->diffInSeconds($result->created_at);
+//                $count_answer = $task->results($user->id)->count();
                 $count_question = count($task->questions['questions']);
                 $count_question_correct = collect($answers)->where('correct', true)->count();
                 $proc = round($count_question_correct * 100 / $count_question, 1);
@@ -135,20 +148,39 @@ class ApiController extends Controller
                     $result->status = Result::STATUS_FINISHED_OK;
                 } else {
                     $result->status = Result::STATUS_FINISHED_FILED;
+                    $result->penalty = $task->penalty;
                 }
-                $result->result  -= $task->penalty * ($count_answer-1);
+
             }
+            $result->save();
+            dispatch(new SendUserSocket(['rating' => $result->user->getRating()], $result->user_id, 'coachUpdateRating'));
+
+        }
+        else if ($task->type == Task::TYPE_LESSON){
+            $finished = true;
+            //$result->time = now()->diffInSeconds($result->created_at);
+            $result->status = Result::STATUS_FINISHED_OK;
+            $result->result = 100;
+            $result->save();
+            dispatch(new SendUserSocket(['rating' => $result->user->getRating()], $result->user_id, 'coachUpdateRating'));
         }
         else{
             $finished = true;
-            $result->time = now()->diffInSeconds($result->created_at);
+            //$result->time = now()->diffInSeconds($result->created_at);
             $result->status = Result::STATUS_CHECKED;
 
-            $message = new CheckTask($user, $result);
-            Mail::to($user->email)->queue($message);
-        }
+            $result->save();
 
-        $result->save();
+            $message = new CheckTask($user, $result);
+            foreach ($position->mentors as $mentor) {
+                Mail::to($mentor->email)->queue($message);
+                dispatch(new SendUserSocket(Result::resultChecks($mentor->id)->select('id')->get()->toArray(), $mentor->id, 'coachMentorResultUpdate'));
+            }
+
+        }
+        dispatch(new SendUserSocket(['task_id'=>$result->task_id], $result->user_id, 'coachTaskUpdate'));
+
+
         $ret = ['question_id' => $question_id, 'finished' => $finished, 'status_task'=>$result->status];
         if($task->type == Task::TYPE_TEST) {
             if ($task->questions['questions'][$question_id]['correct_answer'] == $answer) {
@@ -159,6 +191,12 @@ class ApiController extends Controller
                 $ret['message'] = __('coach::message.answer_wrong');
             }
             $ret['result'] = $result->result.'%';
+        }
+        else if ($task->type == Task::TYPE_LESSON){
+            $ret['status'] = 'success';
+            $ret['status_task'] .= '_lesson';
+
+            //$ret['result'] = $ret['message'] = __('coach::message.task_ok');
         }
         else{
             $ret['status'] = 'success';

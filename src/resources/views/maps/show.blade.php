@@ -10,7 +10,7 @@
 @section('contents')
 
 
-    <div class="create_page_wrapper map-component-container" id="manage-map-controller" style="min-width: 2339.88px;">
+    <div class="create_page_wrapper map-component-container" id="manage-map-controller">
         <div class="map-wrapper" id="map-wrapper">
 
             <div id="canvas"  >
@@ -44,6 +44,18 @@
                             <stop offset="10%" stop-color="#ffffff" stop-opacity="0.7"></stop>
                             <stop offset="70%" stop-color="#ffffff" stop-opacity="0"></stop>
                         </radialGradient>
+
+                        <linearGradient id="svgGradient4" x1="0%" x2="100%" y1="0%" y2="100%">
+                            <stop class="end" offset="80%" stop-color="#ffb8b8" stop-opacity="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="gradient--spot" fy="20%" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"></stop>
+                            <stop offset="50%" stop-color="#ffffff" stop-opacity="0"></stop>
+                            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
+                        </linearGradient>
+
+
+
                     </defs>
 
                 </svg>
@@ -60,12 +72,8 @@
 @stop
 
 
-
-
-@section('css')
-
-@append
 @section('js')
+    <script>
     const g_url = {'all_data': '{{route('api.coach.task.all', [$position->id])}}',
     'task_show': '{{route('coach.task',[$position->id, 'task_id'])}}',
     }
@@ -73,4 +81,5 @@
     $(document).ready(function () {
     initMap(false, 0);
     });
+    </script>
 @append

@@ -6,7 +6,7 @@
 @section('buttons')
     <form method="post" id="form-add-new-task" action="{{route('api.coach.task.create',['position'=>$position->id])}}">
         @csrf
-        <button id="add-new-task" style="margin: 5px !important;" title="{{__('coach::button.create')}}" class="btn btn-success btn-add-new">
+        <button id="add-new-task" style="margin: 5px !important;" title="{{__('coach::button.create')}}" class="btn btn-success 1btn-add-new">
             <i class="fas fa-plus-circle"></i> <span>{{__('coach::button.create')}}</span>
         </button>
     </form>
@@ -16,7 +16,7 @@
 @section('contents')
 
 
-    <div class="create_page_wrapper map-component-container" id="manage-map-controller" style="min-width: 2339.88px;">
+    <div class="create_page_wrapper map-component-container" id="manage-map-controller">
         <div class="map-wrapper" id="map-wrapper">
 
             <div id="canvas"  >
@@ -45,10 +45,19 @@
                         <linearGradient id="svgGradientinterview" x1="0%" x2="100%" y1="0%" y2="100%">
                             <stop class="end" offset="100%" stop-color="#A4D2FF" stop-opacity="1"></stop>
                         </linearGradient>
-                        <radialGradient id="gradient--spot" fy="20%">
-                            <stop offset="10%" stop-color="#ffffff" stop-opacity="0.7"></stop>
-                            <stop offset="70%" stop-color="#ffffff" stop-opacity="0"></stop>
-                        </radialGradient>
+                        <linearGradient id="svgGradientlesson" x1="0%" x2="100%" y1="0%" y2="100%">
+                            <stop class="end" offset="100%" stop-color="#feffa4" stop-opacity="1"></stop>
+                        </linearGradient>
+{{--                        <radialGradient id="gradient--spot" fy="20%">--}}
+{{--                            <stop offset="10%" stop-color="#ffffff" stop-opacity="0.7"></stop>--}}
+{{--                            <stop offset="70%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                        </radialGradient>--}}
+{{--                        <linearGradient id="gradient--spot" fy="20%" x1="0" x2="0" y1="0" y2="1">--}}
+{{--                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                            <stop offset="5%" stop-color="#ffffff" stop-opacity="0.4"></stop>--}}
+{{--                            <stop offset="50%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                        </linearGradient>--}}
                     </defs>
 
                 </svg>
@@ -64,13 +73,8 @@
 @stop
 
 
-
-
-@section('css')
-
-@append
 @section('js')
-
+    <script>
     const g_url = {'all_data': '{{route('api.coach.task.all', [$position->id])}}',
         'update_data': '{{route('api.coach.task.update', [$position->id])}}',
         'line_del': '{{route('api.coach.task_line.delete', [$position->id])}}',
@@ -78,4 +82,5 @@
         'task_edit': '{{route('coach.tasks.edit', ['task_id'])}}',
     }
     const g_text = {!! json_encode(__('coach::view'), JSON_UNESCAPED_UNICODE) !!};
+    </script>
 @append

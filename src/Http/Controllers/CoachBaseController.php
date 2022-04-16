@@ -143,7 +143,7 @@ class CoachBaseController extends Controller
             $ret = redirect()->route("coach.{$this->slug}.index");
 
         $ret->with([
-                    'message'    => $id?__('coach::generic.successfully_added_new'):__('coach::generic.successfully_updated')." {$this->dataType->name}",
+                    'message'    => $id?__('coach::message.successfully_added_new'):__('coach::message.successfully_updated')." {$this->dataType->name}",
                     'alert-type' => 'success',
                 ]);
         return $ret;
@@ -168,11 +168,11 @@ class CoachBaseController extends Controller
         $res = $data->destroy($ids);
         $data = $res
             ? [
-                'message'    => __('coach::generic.successfully_deleted')." {$displayName}",
+                'message'    => __('coach::message.successfully_deleted')." {$displayName}",
                 'alert-type' => 'success',
             ]
             : [
-                'message'    => __('coach::generic.error_deleting')." {$displayName}",
+                'message'    => __('coach::message.error_deleting')." {$displayName}",
                 'alert-type' => 'error',
             ];
 

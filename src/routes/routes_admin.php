@@ -8,6 +8,13 @@ Route::group(['prefix' => 'coach', 'as' => 'coach.'], function() {
 //    Route::get('position/edit/{id}', $namespacePrefix.'PositionController@edit')->name('position.edit');
 //    Route::post('position/update/{id}', $namespacePrefix.'PositionController@update')->name('position.update');
 //    Route::delete('position/{id}', $namespacePrefix.'PositionController@delete')->name('position.delete');
+    if(strpos(url()->current(), '/admin')) {
+        Route::get('/', $namespacePrefix . 'FrontendController@index')->name('index');
+        Route::get('/map/{position}', $namespacePrefix . 'FrontendController@map')->name('map');
+        Route::get('/task/{position}/{task}', $namespacePrefix . 'FrontendController@task')->name('task');
+        Route::get('/results', $namespacePrefix . 'FrontendController@results')->name('results');
+    }
+
 
     Route::resource('positions', $namespacePrefix.'PositionController');
     Route::get('positions/{position}/map', $namespacePrefix.'PositionController@map')->name('positions.map');
@@ -18,5 +25,16 @@ Route::group(['prefix' => 'coach', 'as' => 'coach.'], function() {
     Route::resource('maps', $namespacePrefix.'MapController');
     Route::resource('tasks', $namespacePrefix.'TaskController');
     Route::resource('users', $namespacePrefix.'UserController');
+
+    Route::post('task/reset', $namespacePrefix . 'TaskController@reset')->name('task.reset');
+
+
+
+    Route::get('settings/', $namespacePrefix.'SettingsController@index')->name('settings.index');
+
+    Route::put('settings/update/{item}', $namespacePrefix.'SettingsController@updateByItem')->name('settings.update.item');
+
+    Route::delete('settings/delete/{item}', $namespacePrefix.'SettingsController@deleteByItem')->name('settings.delete.item');
+
 
 });

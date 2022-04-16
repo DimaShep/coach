@@ -32,11 +32,11 @@ class PositionController extends CoachBaseController
         if($id)
             $data = $this->model->find($id);
 
-        $users = User::all();
+        $mentors = User::getMentors();
 
         $avatars = Avatar::getPositionsAvatars();
 
-        return Coach::view(null, $this, 'edit-add', compact('data','this', 'users', 'avatars'));
+        return Coach::view(null, $this, 'edit-add', compact('data','this', 'mentors', 'avatars'));
     }
 
     public function update(Request $request, $id)
@@ -61,4 +61,50 @@ class PositionController extends CoachBaseController
         return Coach::view(null, $this, 'map', compact('position','this', 'users', 'avatars'));
     }
 
+
+    public function getDayToAutoreset()
+    {
+
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $ids = [];
+        if (empty($id)) {
+            // Bulk delete, get IDs from POST
+            $ids = explode(',', $request->ids);
+        } else {
+            // Single item delete, get ID from URL
+            $ids[] = $id;
+        }
+        foreach ($ids as $id) {
+            $data = call_user_func([$this->model, 'findOrFail'], $id);
+        }
+
+        $displayName = count($ids) > 1 ? $this->dataType->name_plural : $this->dataType->name;
+
+        $positions = Position::whereIn('id', $ids)->get();
+        foreach ($positions as $position){
+            $position->mentors()->detach();
+            $position->users()->detach();
+            $position->tasks()->detach();
+        }
+
+        $res = $data->destroy($ids);
+        $data = $res
+            ? [
+                'message'    => __('coach::message.successfully_deleted')." {$displayName}",
+                'alert-type' => 'success',
+            ]
+            : [
+                'message'    => __('coach::message.error_deleting')." {$displayName}",
+                'alert-type' => 'error',
+            ];
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'data' => $data]);
+        }
+
+        return redirect()->route("coach.{$this->slug}.index")->with($data);
+    }
 }

@@ -2,8 +2,6 @@
 
 namespace Shep\Coach\Mail;
 
-
-
 use App\Models\Checkout\Checkout;
 use App\User;
 use Illuminate\Bus\Queueable;
@@ -18,21 +16,26 @@ class ResetTask extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
-    public $task;
+    public $data_tasks;
 
-    public function __construct(User $user, Task $tasks)
+    public function __construct(User $user, $data_tasks)
     {
-        $this->task = $tasks;
+        $this->data_tasks = $data_tasks;
         $this->user = $user;
     }
 
     public function build()
     {
-        $position = $this->task->positions( $this->user)->first();
+        $data = [];
+        foreach ($this->data_tasks as $task)
+        {
+            $position = $task->positions->first();
+            $data[$task->name] = route('coach.task',['position'=>$position->id,'task'=>$task->id]);
+        }
+
         $view = $this->subject(__('coach::emails.reset_task'))->view('coach::emails.reset_task')->with([
-            'task' => $this->task,
+            'tasks' => $data,
             'user' => $this->user,
-            'url' => route('coach.task',['position'=>$position->id,'task'=>$this->task->id]),
         ]);
         return $view;
     }

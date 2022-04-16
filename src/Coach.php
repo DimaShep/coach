@@ -347,6 +347,6 @@ class Coach
 
     public function getLocales()
     {
-        return array_diff(scandir(realpath(__DIR__.'/../publishable/lang')), ['..', '.']);
+        return array_diff(scandir(realpath(__DIR__.'/../resource/lang')), ['..', '.']);
     }
 }

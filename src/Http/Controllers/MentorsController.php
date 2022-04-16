@@ -1,6 +1,7 @@
 <?php namespace Shep\Coach\Http\Controllers;
 
 
+use App\Jobs\SendUserSocket;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -24,25 +25,13 @@ class MentorsController extends CoachBaseController
 {
     public function index(Request $request)
     {
-//        $query = auth()->user()->mentorsPositions()->whereHas('tasks', function($q){
-//            $q->whereHas('results', function ($q) {
-//                $q->where('status', Result::STATUS_CHECKED);
-//            });
-//        })->with('tasks.results');
 
-
-        $query = Result::where('status', Result::STATUS_CHECKED)->whereHas('task', function ($q) {
-            $q->whereHas('positions', function ($q){
-                $q->whereHas('mentors', function ($q) {
-                    $q->where('id', auth()->user()->id);
-                });
-            });
-        })->with(['user','task.positions']);
-
+        $query = Result::resultChecks(0, 0 )->orderByDesc('id');
+        $positions = Position::active()->orderBy('name')->get();
         $results = $query->get();
 
 
-        return Coach::view(null, $this, 'browse' , compact('results'));
+        return Coach::view(null, $this, 'browse' , compact('results', 'positions'));
     }
 
     public function checked(Request $request, Result $result)
@@ -56,33 +45,36 @@ class MentorsController extends CoachBaseController
 
         $result->comment = $request->get('comment');
         $result->result = $request->get('result');
-        if($result->task->questions['proc'] >  $result->result)
-        {
+        if ($result->task->questions['proc'] > $result->result) {
             $result->status = Result::STATUS_FINISHED_FILED;
-        }
-        else{
+            if ($result->task->penalty) {
+                $result->penalty = $result->task->penalty;//($result->howManyAttempts()) * $result->task->penalty;
+            }
+        } else {
             $result->status = Result::STATUS_FINISHED_OK;
         }
-        if($result->task->penalty)
-            $result->result = $result->result - (($result->howManyAttempts()-1) * $result->task->penalty);
-        $ret_points =  $request->get('points');
-        $answers = $result->answers ;
+
+        $ret_points = $request->get('points');
+        $answers = $result->answers;
         $answers['correct'] = [];
         $answers['points'] = [];
-        foreach ($result->task->questions['points']  as $i => $point)
-        {
-            $answers['correct'][$i] = isset($ret_points[$i])?1:0;
+        foreach ($result->task->questions['points'] as $i => $point) {
+            $answers['correct'][$i] = isset($ret_points[$i]) ? 1 : 0;
             $answers['points'][$i] = $point;
         }
-        $result->answers =$answers;
+        $result->answers = $answers;
         $result->save();
 
-        if($request->has('back')){
+        if ($request->has('back')) {
             $this->setBack($request->get('back'));
         }
 
         $message = new MentorsResult($result->user, $result);
         Mail::to($result->user->email)->sendNow($message);
+
+        dispatch(new SendUserSocket(Result::resultChecks()->select('id')->get()->toArray(), auth()->user()->id, 'coachMentorResultUpdate'));
+        dispatch(new SendUserSocket(['task_id'=>$result->task_id], $result->user_id, 'coachTaskUpdate'));
+        dispatch(new SendUserSocket(['rating' => $result->user->getRating()], $result->user_id, 'coachUpdateRating'));
 
         return $this->returnUpdate($request, $id, $result);
     }

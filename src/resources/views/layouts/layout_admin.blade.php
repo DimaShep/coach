@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="{{ coach_asset('libs/tinymce.min.js') }}"></script>
     <script src="{{ coach_asset('libs/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ coach_asset('libs/jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
@@ -12,8 +14,7 @@
     <script src="{{ coach_asset('libs/toastr/toastr.min.js') }}"></script>
 {{--    <script src="{{ coach_asset('libs/fabric/fabric-4.5.0.min.js') }}"></script>--}}
     <script src="{{ coach_asset('js/coach.js') }}"></script>
-
-
+    <script src="{{ coach_asset('js/socket.js') }}"></script>
 
     <link rel="stylesheet" href="{{ coach_asset('libs/jquery-ui-1.12.1/jquery-ui.min.css') }}"/>
     <link rel="stylesheet" href="{{ coach_asset('libs/bootstrap-toggle-2.2.2/bootstrap-toggle.min.css') }}"/>
@@ -26,12 +27,11 @@
     <title>
         @yield('title')
     </title>
-    <style>
-        @yield('css')
-    </style>
-    <script>
-        @yield('js')
-    </script>
+    @yield('css')
+
+
+    @yield('js')
+
 </head>
 <body>
 <div class="content">

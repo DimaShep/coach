@@ -4,19 +4,24 @@
 @stop
 
 @section('buttons')
-    <div class="row coach-map">
+    <div class="row coach-map vertical-center">
         <div class="col-md-1">
             <a href="{{route('coach.maps.index')}}" class="btn btn-success">{{__('coach::button.back')}}</a>
         </div>
-        <div class="col-md-1">
+        <div class="col-md-2">
             <form method="post" id="form-add-new-task" action="{{route('api.coach.task.create',['position'=>$position->id])}}">
                 @csrf
-                <button id="add-new-task" style="margin: 5px !important;" title="{{__('coach::button.create')}}" class="btn btn-success btn-add-new">
-                    <i class="fas fa-plus-circle"></i> <span>{{__('coach::button.create')}}</span>
+                <button id="add-new-task" style="margin: 5px !important;" title="{{__('coach::button.add_tasks')}}" class="btn btn-success 1btn-add-new">
+                    <i class="fas fa-plus-circle"></i> <span>{{__('coach::button.add_tasks')}}</span>
                 </button>
             </form>
         </div>
         <div class="col-md-3">
+            <div style="font-weight: bold;">{{$position->name}}</div>
+        </div>
+
+
+        <div class="col-md-3 ">
             <select class="select2 copy_position" name="copy_position" data-action="{{route('api.coach.position.copy',['position'=>$position->id])}}" onchange="copyPosition($(this))">
                 <option value="0">{{ __('coach::view.copy_position') }}</option>
 {{--                @foreach($copy_positions as $pos)--}}
@@ -39,7 +44,7 @@
 @section('contents')
 
 
-    <div class="create_page_wrapper map-component-container" id="manage-map-controller" style="min-width: 2339.88px;">
+    <div class="create_page_wrapper map-component-container" id="manage-map-controller">
         <div class="map-wrapper" id="map-wrapper">
 
             <div id="canvas"  >
@@ -51,27 +56,37 @@
                             <feDropShadow dx="4" dy="8" stdDeviation="4"></feDropShadow>
                         </filter>
                         <linearGradient id="svgGradientnull" x1="0%" x2="100%" y1="0%" y2="100%">
-                            <stop class="end" offset="100%" stop-color="#c5ddf8" stop-opacity="1"></stop>
+                            <stop class="end" offset="100%" stop-color="#cb033b" stop-opacity="1"></stop>
                         </linearGradient>
                         <linearGradient id="svgGradienttest" x1="0%" x2="100%" y1="0%" y2="100%">
-                            <stop class="end" offset="100%" stop-color="#ffcc99" stop-opacity="1"></stop>
+                            <stop class="end" offset="100%" stop-color="#bf8e5d" stop-opacity="1"></stop>
                         </linearGradient>
                         <linearGradient id="svgGradientexercise_set" x1="0%" x2="100%" y1="0%" y2="100%">
                             <stop class="end" offset="100%" stop-color="#fec5ff" stop-opacity="1"></stop><
                         </linearGradient>
                         <linearGradient id="svgGradientexercise" x1="0%" x2="100%" y1="0%" y2="100%">
-                            <stop class="end" offset="100%" stop-color="#3efba5" stop-opacity="1"></stop>
+                            <stop class="end" offset="100%" stop-color="#22c97d" stop-opacity="1"></stop>
                         </linearGradient>
                         <linearGradient id="svgGradientvideo" x1="0%" x2="100%" y1="0%" y2="100%">
-                            <stop class="end" offset="100%" stop-color="#a4ebff" stop-opacity="1"></stop>
+                            <stop class="end" offset="100%" stop-color="#2b96b5" stop-opacity="1"></stop>
                         </linearGradient>
                         <linearGradient id="svgGradientinterview" x1="0%" x2="100%" y1="0%" y2="100%">
                             <stop class="end" offset="100%" stop-color="#A4D2FF" stop-opacity="1"></stop>
                         </linearGradient>
-                        <radialGradient id="gradient--spot" fy="20%">
-                            <stop offset="10%" stop-color="#ffffff" stop-opacity="0.7"></stop>
-                            <stop offset="70%" stop-color="#ffffff" stop-opacity="0"></stop>
-                        </radialGradient>
+                        <linearGradient id="svgGradientlesson" x1="0%" x2="100%" y1="0%" y2="100%">
+                            <stop class="end" offset="100%" stop-color="#edc500" stop-opacity="1"></stop>
+                        </linearGradient>
+{{--                        <radialGradient id="gradient--spot" fy="20%">--}}
+{{--                            <stop offset="10%" stop-color="#ffffff" stop-opacity="0.7"></stop>--}}
+{{--                            <stop offset="70%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                        </radialGradient>--}}
+{{--                        <linearGradient id="gradient--spot" fy="20%" x1="0" x2="0" y1="0" y2="1">--}}
+{{--                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                            <stop offset="5%" stop-color="#ffffff" stop-opacity="0.4"></stop>--}}
+{{--                            <stop offset="50%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>--}}
+{{--                        </linearGradient>--}}
+
                     </defs>
 
                 </svg>
@@ -89,11 +104,8 @@
 
 
 
-
-@section('css')
-
-@append
 @section('js')
+    <script>
     const g_url = {'all_data': '{{route('api.coach.task.all', [$position->id])}}',
         'update_data': '{{route('api.coach.task.update', [$position->id])}}',
         'line_del': '{{route('api.coach.task_line.delete', [$position->id])}}',
@@ -109,4 +121,5 @@
         $('.select2').select2({ width: '100%'});
         initMap(true);
     });
+    </script>
 @append

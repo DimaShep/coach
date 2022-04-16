@@ -13,4 +13,6 @@
 
 
 @section('js')
+    <script>
+    </script>
 @append

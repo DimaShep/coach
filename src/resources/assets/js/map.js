@@ -26,6 +26,21 @@ function initMap(is_admin = false, user_id = 0)
                 $('.edit_task').remove();
             }
         });
+    }else{
+        window.Echo.private('User.'+user_id)
+            .listen('.coachTaskUpdate', (e) => {
+
+            if(e.message){
+                $('.circle-data').each(function(){
+                    let circle = $(this).data('circle');
+                    if(circle.task.id == e.message.task_id){
+                        getAllTasks();
+                        return false;
+                    }
+                })
+            }
+        });
+
     }
 }
 
@@ -53,36 +68,59 @@ class Circle
         let r = parseInt(this.task.pivot.data.r);
         this.parent_id = this.task.pivot.parent_id? parseInt(this.task.pivot.parent_id) :0;
 
-        this.circle_data = $('<div class="ui-item circle-data" data-parent="'+this.parent_id +'" data-id="' + this.task.id + '" id="circle-data-' + this.task.id + '" style="width:' + (r * 2) + 'px;height:' + (r * 2) + 'px;top:' + y + 'px; left:' + x + 'px;position: absolute;">' +
-            (this.task.name) + ' ('+(this.task.id)+')' + '<div class="task_time">'+(this.task.time?this.task.time+' мин':'')+'</div>' +
+        let icon = {'test': '<i class="fas fa-edit"></i>',
+        'exercise': '<i class="fas fa-tasks"></i>',
+        'video': '<i class="fas fa-video"></i>',
+        'lesson': '<i class="fab fa-readme"></i>'};
+
+        this.circle_data = $('<div class="ui-item circle-data" data-parent="'+this.parent_id +'" data-id="' + this.task.id + '" id="circle-data-' + this.task.id + '" style="width:' + 230 + 'px;height:' + 100 + 'px;top:' + y + 'px; left:' + x + 'px;position: absolute;">' +
+            '<div class="task_text">'+(this.task.name)  + '</div>' +
+            '<div class="task_time">'+(this.task.time?this.task.time+' мин':'')+'</div>' +
+            '<div class="task_id">'+(this.task.id)+'</div>' +
+            '<div class="task_type">'+(this.task.type?"<span title='"+getText('type_'+this.task.type)+"'>"+icon[this.task.type]+"</span>":'')+'</div>' +
             '</div>');
         if(this.is_admin) {
             let text_size =  Math.round(this.task.info.text / 1024, 1);
             if(text_size == 0 && this.task.info.text>0)
                 text_size=0.1;
             this.circle_data.append('<div class="file_icons_block">' +
-            '<span class="type_file_icon text with_tooltip" title="' + getText('title_text') + '"><span class="icon_description">' +text_size+ 'K<i class="fas fa-text-width"></i></span></span>' +
-            '<span class="type_file_icon image with_tooltip" title="' + getText('title_img') + '"><span class="icon_description">' + this.task.info.img + '<i class="far fa-image"></i></span></span>' +
-            '<span class="type_file_icon video with_tooltip" title="' + getText('title_video') + '"><span class="icon_description">' + this.task.info.video + '<i class="fas fa-video"></i></span></span>' +
+            // '<span class="type_file_icon text with_tooltip" title="' + getText('title_text') + '"><span class="icon_description">' +text_size+ 'K<i class="fas fa-text-width"></i></span></span>' +
+            // '<span class="type_file_icon image with_tooltip" title="' + getText('title_img') + '"><span class="icon_description">' + this.task.info.img + '<i class="far fa-image"></i></span></span>' +
+            // '<span class="type_file_icon video with_tooltip" title="' + getText('title_video') + '"><span class="icon_description">' + this.task.info.video + '<i class="fas fa-video"></i></span></span>' +
             '<span class="type_file_icon con_anchor with_tooltip" title="' + getText('title_anchor') + '"><i class="fas fa-anchor"></i></span>' +
             '</div>');
+            this.circle_data.find('.task_type').css('right', 0);
         }
         else{
             const STATUS_NEW = 1;
             const STATUS_CHECKED = 2;
             const STATUS_FINISHED_OK = 3;
             const STATUS_FINISHED_FILED = 4;
-            if(this.result == 2){
-                this.circle_data.append('<div class="result_checked"><i class="fas fa-edit"></i></div>');
+            let status_text = '';
+            if(this.result == 1){
+                status_text = getText('title_next_task');
+                this.circle_data.find('.task_type').css('right', 0);
+            }
+            else if(this.result == 2){
+                status_text = getText('title_result_checked');
+                this.circle_data.append('<div class="result_checked"><i class="far fa-eye" title="' + status_text + '"></i> </div>');
             }
             else if(this.result == 3){
-                this.circle_data.append('<div class="result_ok"><i class="fas fa-check-circle"></i></div>');
+                status_text = getText('title_result_ok');
+                this.circle_data.append('<div class="result_ok"><i class="fas fa-check-circle" title="' + status_text + '"></i></div>');
             }
             else if(this.result == 4){
-                this.circle_data.append('<div class="result_failed"><i class="fas fa-exclamation-triangle"></i></div>');
+                status_text = getText('title_result_failed');
+                this.circle_data.append('<div class="result_failed"><i class="fas fa-exclamation-triangle" title="' + status_text + '"></i></div>');
+            }
+            else{
+                this.circle_data.find('.task_type').css('right', 0);
             }
 
-            if(this.task.results)
+            this.circle_data.attr('title', status_text);
+
+
+            if(this.task.results && this.result != 2)
             {
                 this.circle_data.find('.task_time').text(this.task.results.result+"%")
             }
@@ -92,18 +130,41 @@ class Circle
         this.circle_data.data('circle', this);
         this.initEvent(this.circle_data);
         $("#canvas").append(this.circle_data);
-        x += r;
-        y += r;
+        //x += r;
+        //y += r;
         this.circle = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-        this.circle.addClass('g-circle').attr('id', 'circle-' + this.task.id).attr('x', x).attr('y', y).attr('transform', 'translate(' + x + ',' + y + ')');
+        this.circle.addClass('g-circle').attr({
+            id: 'circle-' + this.task.id,
+            x: x,
+            y: y,
+            transform: 'translate(' + x + ',' + y + ')'
+        });
 
-        let circle = $(document.createElementNS('http://www.w3.org/2000/svg', 'circle'));
-        circle.addClass('circle').attr('r', r).attr('data-id', this.task.id).attr('filter', 'url(#inset)').attr('fill', "url(#svgGradient"+(this.is_admin?this.task.type:this.result)+")");
 
-        let ellipse = $(document.createElementNS('http://www.w3.org/2000/svg', 'ellipse'));
-        ellipse.addClass('glare').attr('rx', "55").attr('ry', 25).attr('cx', 55).attr('cy', -75).attr('fill', "url(#gradient--spot)").attr('transform', 'rotate(-45, 55, 55)');
 
-        this.circle.append(circle).append(ellipse)
+        let circle = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+        circle.addClass('circle').attr({
+            width: 230,
+            height: 100,
+            rx: 15,
+            ry: 15,
+            filter: 'url(#inset)',
+            fill: "url(#svgGradient"+(this.is_admin?this.task.type:this.result)+")"
+        });
+
+
+        // let ellipse = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+        // ellipse.addClass('glare').attr({
+        //   width: 200,
+        //   height: 100,
+        //   rx: 15,
+        //   ry: 15,
+        //   fill: "url(#gradient--spot)",
+        //
+        // })
+
+
+        this.circle.append(circle);//.append(ellipse)
         this.circle.data('circle', this);
 
         $('#connector_canvas').append(this.circle);
@@ -129,11 +190,12 @@ class Circle
     syncCircle()
     {
         const pos = this.circle_data.position();
-        const width = this.circle_data.outerWidth()
-        const x = pos.left+width/2;
-        const y = pos.top+width/2;
 
-        this.circle.attr('transform', 'translate('+x+','+ y+')').attr('x', x).attr('y', y);
+        this.circle.attr({
+            transform: 'translate('+pos.left+','+pos.top+')',
+            x: pos.left,
+            y: pos.top
+        });
     }
 
     syncLine()
@@ -157,18 +219,36 @@ class Circle
 
 
             el.click(function (event) {
-                if ($(event.target).hasClass('file_icons_block') && (!$(this).data('stop') || $(this).data('stop') == 0))
+                if (/*$(event.target).hasClass('file_icons_block') && */(!$(this).data('stop') || $(this).data('stop') == 0))
                     $(this).data('circle').showMenu(event)
                 $(this).data('stop', 0);
             });
 
             el.draggable({
+                start: function(event, ui) {
+                    let x = {};
+                    let y = {};
+                    $('.circle-data[id!="'+$(this).attr('id')+'"]').each(function(){
+                        let circle_f = $(this).data('circle');
+                        let cur_pos_f =  $(this).position();
+                        x[circle_f.task.id] =cur_pos_f.left;
+                        y[circle_f.task.id] =cur_pos_f.top;
+                        //cont += circle_f.task.id+'=x:'+cur_pos_f.left+',y:'+cur_pos_f.top+"  ";
+                    });
+                    $(this).data('x', x).data('y', y);
+                },
                 drag: function (event, ui) {
                     $('.edit_task').remove();
                     let circle = $(this).data('circle');
+
+
+
+                    circle.glueNearOther($(this));
                     circle.syncLine();
                     circle.syncCircle();
                     resizeCanvas();
+
+
                 },
                 stop: function (event, ui) {
                     let circle = $(this).data('circle');
@@ -177,6 +257,7 @@ class Circle
                     if (circle.circle_data.position().top < 0)
                         circle.circle_data.css('top', 0);
 
+                    circle.glueNearOther($(this));
                     circle.syncLine();
                     circle.syncCircle();
                     circle.updateTask();
@@ -188,7 +269,10 @@ class Circle
                 accept: '.con_anchor',
                 drop: function (event, ui) {
                     let circle = ui.draggable.closest('.circle-data').data('circle')
-                    circle.line.connectingLine($(this).data('circle'));
+                    let connect_circle = $(this).data('circle');
+                    if(connect_circle.task.id == circle.task.id)
+                        return false;
+                    circle.line.connectingLine(connect_circle);
                     circle.updateTask();
                 }
             });
@@ -218,13 +302,36 @@ class Circle
         }
         else{
             el.click((function(){
-                if(this.result !== 2 && this.result !== 3 && this.result !== 0) {
+                // if(this.result !== 2 && this.result !== 3 && this.result !== 0) {
                     let url = getUrl('task_show');
                     if (!url)
                         return;
                     window.location.href = url.replace('task_id', this.task.id)
-                }
+                // }
             }).bind(this));
+
+        }
+    }
+
+    glueNearOther(el){
+        let near = 30;
+        let cur_pos =  el.position();
+        let x = el.data('x');
+        let y = el.data('y');
+
+        for( i in x){
+            if(cur_pos.left+near > x[i] && cur_pos.left-near < x[i])
+            {
+                el.css('left', x[i]);
+                break;
+            }
+        }
+        for( i in y){
+            if(cur_pos.top+near > y[i] && cur_pos.top-near < y[i])
+            {
+                el.css('top', y[i]);
+                break;
+            }
 
         }
     }
@@ -247,8 +354,8 @@ class Circle
     {
         $('.edit_task').remove();
         let edit_task = $('<div class="edit_task" style="top:'+(event.originalEvent.clientY-25)+'px;left:'+event.originalEvent.clientX+'px;">' +
-            '<i class="fas fa-edit edit"></i>' +
-            '<i class="fas fa-trash-alt delete"></i>' +
+            '<i class="fas fa-edit edit" title="' + getText('title_edit') + '"></i>' +
+            '<i class="fas fa-trash-alt delete" title="' + getText('title_del') + '"></i>' +
             '</div>')
         edit_task.show();
 
@@ -326,14 +433,14 @@ class Line
 
         connector.prepend(this.line);
         let start = this.child.circle_data.position();
-        let left = start.left+this.child.circle_data.outerHeight()/2;
-        let top = start.top+this.child.circle_data.outerWidth()/2;
+        let left = start.left+this.child.circle_data.outerWidth()/2;
+        let top = start.top+this.child.circle_data.outerHeight()/2;
 
         this.line.attr('d','M'+left+','+top +'L'+left+','+top +'L'+left+','+top  );
 
         if(this.is_admin) {
             this.line.click((function (event) {
-                $(this).data('line').showMenu(event);
+                this.showMenu(event);
             }).bind(this));
         }
     }
@@ -355,14 +462,18 @@ class Line
         this.child.circle_data.find('.con_anchor').css('top','').css('left','');
         this.child.circle_data.find('.con_anchor').hide();
         this.child.parent = this.parent;
+        this.child.parent_id = this.parent.task.id;
     }
 
     moveLine()
     {
         let _end = this.child.circle_data.position();
-        let end = this.child.circle_data.find('.con_anchor').position();
+        let anhor = this.child.circle_data.find('.con_anchor');
+        let end = anhor.position();
+        let start = anhor.parent().position();
 
         let delta = this.child.circle_data.outerWidth() - this.child.circle_data.width();
+        console.log(_end, end, start)
         if (_end && end) {
             let static_pos = this.line.attr('d').split('L')[0];
 
@@ -370,8 +481,8 @@ class Line
             static_val[0] = parseInt(static_val[0]);
             static_val[1] = parseInt(static_val[1]);
 
-            let left = end.left+ _end.left - delta;
-            let top = end.top + _end.top - delta;
+            let left = end.left+ _end.left + start.left+anhor.width()/2;
+            let top = end.top + _end.top + start.top+anhor.height()/2;
             let m_left = Math.min(left, static_val[0]) + Math.abs(left-static_val[0])/2;
             let m_top = Math.min(top, static_val[1]) + Math.abs(top-static_val[1])/2;
 
@@ -409,7 +520,7 @@ class Line
     showMenu(event)
     {
         $('.trash_line').remove();
-        let trash = $('<div class="trash_line" style="top:'+(event.originalEvent.clientY-25)+';left:'+event.originalEvent.clientX+';"><i class="fas fa-trash-alt"></i></div>');
+        let trash = $('<div class="trash_line" style="top:'+(event.originalEvent.clientY-25)+'px;left:'+event.originalEvent.clientX+'px;"><i class="fas fa-trash-alt" title="' + getText('title_del_line') + '"></i></div>');
         trash.data('line', this);
         $('body').append(trash);
         trash.find('i').click((function (e, e1){
@@ -428,6 +539,11 @@ class Line
                     break;
                 }
             }
+            this.parent = null;
+        }
+        if(this.child){
+            this.child.parent = null;
+            this.child.parent_id = 0;
         }
         let anchor = this.child.circle_data.find('.con_anchor')
         anchor.css({top: '', left: ''});
@@ -449,6 +565,27 @@ class Line
     }
 }
 
+function showOneProgress(el, val, proc)
+{
+    el.css('width',proc+'%').attr('aria-valuenow',proc).text(val+'/'+Math.round(proc)+'%');
+}
+
+function showProgress(progress)
+{
+    for( i in progress.proc_finish) {
+
+        let el = $('.bg-task-complete[data-position="'+i+'"]');
+
+        if(el.length)
+            showOneProgress(el, progress.finish[i], progress.proc_finish[i]);
+
+        el = $('.bg-task-on-check[data-position="'+i+'"]');
+        if(el.length)
+            showOneProgress(el, progress.checked[i], progress.proc_checked[i]);
+
+    }
+    $('.task-all').text(progress.all[0]);
+}
 
 function getAllTasks()
 {
@@ -464,7 +601,13 @@ function getAllTasks()
             createNewTasks(result.position, result.tasks, result.results);
         }
         getDataCopy();
+        if(result.progress)
+        {
+            showProgress(result.progress);
+        }
     });
+
+
 }
 
 function createNewTasks(position, tasks, results = null)

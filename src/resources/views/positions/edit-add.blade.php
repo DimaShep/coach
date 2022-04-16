@@ -29,8 +29,13 @@
         @include("coach::fields.toggle",['name'=>'active', 'active'=>$data?$data->active:true])
     </div>
     <div class="form-group mb-3">
+        <label for="auto_reset" class="form-label">{{__('coach::view.auto_reset')}}</label>
+        <input type="text" class="form-control" name="auto_reset" id="auto_reset" value="{{$data?$data->auto_reset:'' }}">
+    </div>
+
+    <div class="form-group mb-3">
         <label for="active_id" class="form-label">{{__('coach::view.mentors')}}</label>
-        <td style="width: 520px">@include('coach::fields.select',['data'=>$users, 'str'=>['name', 'last_name', 'email'], 'val'=>'id','name'=>'mentors', 'multiple'=>true, 'selected'=>($data&&$data->mentors()->exists()?$data->mentors->pluck('id')->toArray():[])])</td>
+        <td style="width: 520px">@include('coach::fields.select',['data'=>$mentors, 'str'=>['name', 'last_name', 'email'], 'val'=>'id','name'=>'mentors', 'multiple'=>true, 'selected'=>($data&&$data->mentors()->exists()?$data->mentors->pluck('id')->toArray():[])])</td>
     </div>
 
 
@@ -41,7 +46,10 @@
 
 @include('coach::modal.avatars', ['avatars'=> $avatars, 'img'=>'.sticker'])
 @section('js')
+    <script>
     $(document).ready(function () {
-    $('.select2').select2({ width: '100%'});
+        $('.select2').select2({ width: '100%'});
+        $('.toggleswitch').bootstrapToggle();
     });
+    </script>
 @append

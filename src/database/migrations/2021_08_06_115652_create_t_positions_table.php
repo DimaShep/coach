@@ -19,6 +19,7 @@ class CreateTPositionsTable extends Migration
             $table->boolean('active')->default(true);
             $table->string('avatar')->nullable()->default(null);
             $table->longText('map')->nullable()->default(null);
+            $table->integer('auto_reset')->default(0);
             $table->timestamps();
             $table->index('active');
 

@@ -5,7 +5,7 @@
 
 @section('buttons')
 
-@include('coach::fields.button_add',['href'=>route('coach.positions.create')])
+@include('coach::fields.button_add',['href'=>route('coach.positions.create'), 'title'=>__('coach::button.add_'.$that->slug())])
 @stop
 @section('contents')
     <div class="map-component-container">
@@ -22,4 +22,6 @@
 
 
 @section('js')
+    <script>
+    </script>
 @append

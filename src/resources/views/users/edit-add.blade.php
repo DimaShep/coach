@@ -27,6 +27,20 @@
         @include("coach::fields.select",['name'=>'positions', 'multiple'=>true, 'data'=>$positions?$positions:[],'val'=>'id', 'str'=>['name'], 'selected'=>$data&&$data->positions?$data->positions->pluck('id')->toArray():[]])
     </div>
 
+    <label for="comment" >{{_('coach::view.comment')}}</label>
+    <textarea id="comment" class="form-control  mb-3" name="comment"></textarea>
+
+    @if($comments->count())
+    <div class="block   mb-3">
+
+        @foreach($comments as $comment)
+            <div class="block   mb-3" style="height: auto;">
+                {{$comment->created_at}} {{$comment->comment}}
+            </div>
+        @endforeach
+    </div>
+    @endif
+
 
 
     <div class="data" data-type="">
@@ -39,9 +53,9 @@
 @stop
 
 @section('js')
-
+    <script>
     $(document).ready(function () {
         $('.select2').select2({ width: '100%'});
     });
-
+    </script>
 @append

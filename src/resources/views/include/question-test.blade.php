@@ -7,7 +7,7 @@
     <div class="answer_block mb-3">
         <div class="mb-3">{{__('coach::view.answer_options')}}:</div>
         <div class="answers mb-3">
-            <form method="POST" class="answers_form"  onsubmit="return false;"  action="{{route('api.coach.send_answer_test', [$task->id])}}">
+            <form method="POST" class="answers_form"  onsubmit="return false;"  action="{{route('api.coach.send_answer_test', [$task->id, $position->id])}}">
                 @csrf
                 <input type="hidden" name="question_id" value="{{$i}}">
                 <input type="hidden" class="start_question" name="start_question" value="{{now()->toDateString()}}">

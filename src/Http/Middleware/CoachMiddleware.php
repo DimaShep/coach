@@ -22,7 +22,7 @@ class CoachMiddleware
     public function handle($request, Closure $next)
     {
         if(!Auth::check())
-            abort(404);
+            return redirect()->route('login');
         if(!Auth()->user()->positions()->exists())
             abort(404);
 

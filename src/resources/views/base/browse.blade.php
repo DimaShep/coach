@@ -14,7 +14,7 @@
                 @foreach($that->model()->getColumns() as $column => $type)
                     <th>{{ucfirst($column)}}</th>
                 @endforeach
-                <th>{{__('coach::generic.control_buttons')}}</th>
+                <th>{{__('coach::view.control_buttons')}}</th>
             </tr>
             <tr>
             @foreach($data as $value)
@@ -30,8 +30,8 @@
 
                     @endif
                 @endforeach
-                    <td>@include('coach::fields.button_edit',['href'=>route('coach.'.$that->slug().'.edit', [$value->id])])
-                        @include('coach::fields.button_del',['href'=>route('coach.'.$that->slug().'.destroy', [$value->id])])
+                    <td>@include('coach::fields.icon_edit',['href'=>route('coach.'.$that->slug().'.edit', [$value->id])])
+                        @include('coach::fields.icon_del',['href'=>route('coach.'.$that->slug().'.destroy', [$value->id])])
                     </td>
                 </tr>
             @endforeach
@@ -44,12 +44,13 @@
 
 
 @section('js')
+    <script>
     $(document).ready(function () {
         $('.select2').select2({ width: '500px'});
         table = $('#dataTable').DataTable({
             "order": [],
             "pageLength": 50,
-            "language": {!! json_encode(__('voyager::datatable'), true) !!},
+            "language": {!! json_encode(__('coach::datatable'), true) !!},
             "columnDefs": [{'searchable':  false, 'targets': -1 }],
             "dom": 'lftipr',
             "dom": 'tipr',
@@ -59,4 +60,5 @@
             $('#dataTable').DataTable().search( this.value ).draw();
         } );
     });
+    </script>
 @append

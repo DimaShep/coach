@@ -4,13 +4,15 @@ namespace Shep\Coach\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Shep\Coach\Mail\UpdateTask;
 
 class Task extends Model
 {
     use \Shep\Coach\Traits\Models\Funcs;
+
     protected $table = 't_tasks';
-    protected $fillable = ['name', 'type', 'text', 'questions', 'info', 'time','penalty'];
+    protected $fillable = ['name', 'type', 'text', 'questions', 'info', 'time', 'penalty'];
     protected $casts = [
         'info' => 'array',
         'questions' => 'array'
@@ -19,18 +21,51 @@ class Task extends Model
     const TYPE_TEST = 'test';
     const TYPE_EXERCISE = 'exercise';
     const TYPE_VIDEO = 'video';
+    const TYPE_LESSON = 'lesson';
 
-    public function results()
+
+    public function results($user_id = 0)
     {
-        return $this->hasOne(Result::class)->where('user_id', auth()->user()->id)->orderByDesc('id');
+        if(!$user_id)
+            $user_id = auth()->user()->id;
+        return $this->hasOne(Result::class)->where('user_id', $user_id)->orderByDesc('id');
     }
 
-    public function allResults($user_id = 0)
+    public function parent()
     {
-        if($user_id)
-            return $this->hasOne(Result::class)->where('user_id', $user_id)->orderByDesc('id');
-        else
-            return $this->hasMany(Result::class)->orderByDesc('id');
+        if(!$this->pivot->parent_id)
+            return null;
+        return Task::find($this->pivot->parent_id);
+    }
+
+    public function allResults()
+    {
+        return $this->hasMany(Result::class)->orderByDesc('id');
+    }
+
+    public function getPogress()
+    {
+        $users = $this->getAllUser()->count();
+        if(!$users)
+            return 0;
+        $results = $this->allResults()->where('status', Result::STATUS_FINISHED_OK)->groupBy('user_id')->count();
+
+        return round($results*100/$users);
+    }
+
+    public function getMiddleProcent()
+    {
+        $results = $this->allResults()->where('status', Result::STATUS_FINISHED_OK)->groupBy('user_id')->get();
+        if(!$results->count())
+            return 0;
+        $ret = 0;
+        foreach ($results as $result){
+            $penalty = Result::where(['task_id'=>$result->task_id, 'user_id'=>$result->user])->sum('penalty');
+            $ret += $result->result-$penalty;
+        }
+
+
+        return round($ret/$results->count());
     }
 
     public function getNotStartedQuestions()
@@ -96,5 +131,14 @@ class Task extends Model
         }
     }
 
+    public function deleteTask()
+    {
+        foreach ($this->allResults as $result){
+            $result->deleteResult();
+        }
+        $this->positions()->detach();
+        $path = config('coach.upload.base_path', 'coach/').'tasks/'.$this->id."/";
+        Storage::disk('public')->deleteDirectory($path, true);
+    }
 }
 

@@ -1,4 +1,4 @@
-<div class="modal hide" tabindex="-1" id="avatars_modal" role="dialog">
+<div class="modal hide" tabindex="-1" id="avatars_modal" role="dialog" style="display: none;">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -24,6 +24,7 @@
 </div>
 
 @section('js')
+    <script>
     $(document).ready(function () {
     $('.sticker_item').click(function (){
     $('#avatars_modal').modal('hide');
@@ -32,4 +33,5 @@
     $('#avatar').val( $(this).data('img'));
     });
     });
+    </script>
 @append

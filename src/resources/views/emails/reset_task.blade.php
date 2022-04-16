@@ -1,1 +1,5 @@
-<h1>{{__('coach::emails.reset_task')}}: <a href="{{$url}}">{{$task->name}}</a></h1>
+<h1>{{__('coach::emails.reset_task')}}: </h1>
+
+@foreach($tasks as $name => $url)
+    <h2><a href="{{$url}}"> {{$name}}</a></h2>
+@endforeach

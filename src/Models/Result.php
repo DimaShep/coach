@@ -15,7 +15,8 @@ class Result extends Model
         'status',
         'answers',
         'result',
-        'comment'];
+        'comment',
+        'penalty'];
     protected $casts = ['answers' => 'array'];
 
     const STATUS_NOT_TESTED = 0;
@@ -42,6 +43,13 @@ class Result extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getFullResultAttribute()
+    {
+        $res = $this->result - $this->penalty;
+        $res = $res < 0? 0 : $res;
+        return $res;
     }
 
     public function getPositionsAttribute()
@@ -80,5 +88,35 @@ class Result extends Model
         return $minutes.":".$second;
 
     }
+
+    public static function resultChecks($user_id = 0, $status = Result::STATUS_CHECKED)
+    {
+        if(!$user_id)
+            $user_id = auth()->user()->id;
+
+        $query = Result::whereHas('task', function ($q) use ($user_id) {
+            $q->whereHas('positions', function ($q) use ($user_id){
+                $q->whereHas('mentors', function ($q)  use ($user_id){
+                    $q->where('id', $user_id);
+                });
+            });
+        })->with(['user','task.positions']);
+
+        if($status)
+            $query->where('status', $status);
+
+        return $query;
+    }
+
+
+    public function deleteResult()
+    {
+        if($this->type == Task::TYPE_VIDEO) {
+            Storage::disk('public')->delete($this->answers['path']);
+        }
+        $this->delete();
+    }
+
+
 }
 

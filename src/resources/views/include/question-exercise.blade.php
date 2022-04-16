@@ -4,7 +4,7 @@
     </div>
     <div class="mb-3" style="padding: 20px">{{$question['questions']}}</div>
 
-    <form method="POST"  enctype="multipart/form-data" onsubmit="return false;" class="answers_form" action="{{route('api.coach.send_answer_test', [$task->id])}}">
+    <form method="POST"  enctype="multipart/form-data" onsubmit="return false;" class="answers_form" action="{{route('api.coach.send_answer_test', [$task->id, $position->id])}}">
         @csrf
         <input type="hidden" name="question_id" value="{{$i}}">
         <input type="hidden" class="start_question" name="start_question" value="{{now()->toDateString()}}">
@@ -12,7 +12,7 @@
 
             <div class="mb-3">{{__('coach::view.answer_for_question')}}:</div>
             <div class="mb-3">
-                <textarea class="form-control" rows="10" name = 'answer'></textarea>
+                <textarea class="form-control" rows="10" name = 'answer' style="overflow-y:hidden;"></textarea>
             </div>
 
             <div class="mb-3">
@@ -21,3 +21,11 @@
         </div>
     </form>
 </div>
+
+<script>
+    $("textarea[name='answer']").on("input", function () {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+    });
+
+</script>

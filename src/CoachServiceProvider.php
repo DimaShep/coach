@@ -85,6 +85,8 @@ class CoachServiceProvider extends ServiceProvider
     private function registerConsoleCommands()
     {
         $this->commands(Console\Commands\InstallCommand::class);
+        $this->commands(Console\Commands\RestartPositionCommand::class);
+        $this->commands(Console\Commands\EraseMediaResultCommand::class);
     }
 
     /**

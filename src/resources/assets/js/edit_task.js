@@ -44,10 +44,6 @@ class test
         }).bind(this));
 
         let answ = '<div class="head_data mb-3">' +
-            '<div class="input-group mb-3" style="width: 330px;">' +
-            '  <span class="input-group-text" id="inputGroup-sizing-default">'+getText('rating_proc')+'</span>' +
-            '  <input type="number" class="form-control" value="'+(data&&data.proc?data.proc:100)+'" name="questions[proc]" max="100" min="1">' +
-            '</div>' +
             '<div class="body_data mb-3"></div>' +
             '<div class="foot_data mb-3"></div>';
 
@@ -111,7 +107,7 @@ class test
                 this.addAnswer(answ, data.correct_answer.indexOf(i)!=-1, val)
             }
         }
-        div[0].scrollIntoView();
+       // div[0].scrollIntoView();
         this.count_question += 1;
     }
 
@@ -144,10 +140,6 @@ class exercise
         }).bind(this));
 
         let answ = '<div class="questions mb-3 ">' +
-            '<div class="input-group mb-3" style="width: 330px;">' +
-            '  <span class="input-group-text" id="inputGroup-sizing-default">'+getText('rating_proc')+'</span>' +
-            '  <input type="number" class="form-control" value="'+(data&&data.proc?data.proc:100)+'" name="questions[proc]" max="100" min="1">' +
-            '</div>' +
             '<div class="row">' +
             '<div class="col-md-6">' +
             '  <label class="form-label" id="inputGroup-sizing-default">'+getText('content_question')+'</label>' +
@@ -174,10 +166,7 @@ class video
         }).bind(this));
 
         let answ = '<div class="questions mb-3 ">' +
-            '<div class="input-group mb-3" style="width: 330px;">' +
-            '  <span class="input-group-text" id="inputGroup-sizing-default">'+getText('rating_proc')+'</span>' +
-            '  <input type="number" class="form-control" value="'+(data&&data.proc?data.proc:100)+'" name="questions[proc]" max="100" min="1">' +
-            '</div>' +
+
             '<div class="row mb-3">' +
             '<div class="col-md-6">' +
             '  <label class="form-label" id="inputGroup-sizing-default">'+getText('content_question')+'</label>' +
@@ -198,6 +187,14 @@ class video
             '</div>';
 
         this.div.append(answ)
+        $('button[type="submit"]')[0].scrollIntoView();
+    }
+}
+
+class lesson
+{
+    init(data = null)
+    {
         $('button[type="submit"]')[0].scrollIntoView();
     }
 }

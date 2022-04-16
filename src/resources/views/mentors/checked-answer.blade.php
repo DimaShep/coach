@@ -7,7 +7,7 @@
 
 <form method="post" action="{{route('coach.mentors.update',[$result->id])}}">
     {{ csrf_field() }}
-    <input type="hidden" name="back" value="{{url()->previous()}}">
+{{--    <input type="hidden" name="back" value="{{url()->current()==url()->previous()?}}">--}}
 
 <div class="row">
     <div class="col-md-12 mb-3">
@@ -15,7 +15,7 @@
     </div>
     <div class="col-md-12 mb-3">
         <label>{{__('coach::view.text')}}:</label>
-        <div class="block text_checked">{!! $result->task->text !!}</div>
+        <div class="block text_checked rich-text">{!! $result->task->text !!}</div>
     </div>
 
     <div class="col-md-6 mb-3">{{__('coach::view.time_answer')}}: {{$result->time}}</div>
@@ -31,7 +31,7 @@
     <div class="col-md-7 mb-3">
         <label>{{__('coach::view.answer')}}:</label>
         @if($result->task->type == \Shep\Coach\Models\Task::TYPE_EXERCISE)
-            <div class="block small text_checked">{!! $result->answers['answer'] !!} </div>
+            <div class="block full text_checked">{!! $result->answers['answer'] !!} </div>
 
         @else
             <div style="text-align: center;">
@@ -57,25 +57,36 @@
 
 
         <div class="col-md-3">
-            <label for="result" class="form-label">{{__('coach::view.rating_task')}})</label>
+            <label for="result" class="form-label">{{__('coach::view.rating_task')}}</label>
         </div>
         <div class="col-md-3">
             <label for="result" class="form-label">{{__('coach::view.rating_proc')}}</label> <label>{{$result->task->questions['proc']}}</label>%
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label for="result" class="form-label">{{__('coach::view.rating_current')}}</label> <label class="rating_current">0</label>%
         </div>
+
         <div class="col-md-12 mb-3">
-            <label for="comment" class="form-label">{{__('coach::view.rating')}}</label>
-        <input type="text" class="form-control" name="result" id="result" value="" required>
-        </div>
-        <div class="col-md-12 mb-3">
-            <label for="comment" class="form-label">{{__('coach::view.comment')}}</label>
-            <textarea type="text" class="form-control" name="comment" id="comment"></textarea>
+            <label for="comment" class="form-label">{{__('coach::view.mentor_comment')}}</label>
+            <textarea type="text" class="form-control" name="comment" id="comment" style="overflow-y:hidden;"></textarea>
         </div>
 
 
-    <div class="col-md-12 mb-3">
+{{--    <div class="col-md-2 mb-3">--}}
+{{--        <label for="comment" class="form-label">{{__('coach::view.mentor_rating')}}</label>--}}
+{{--        <input type="text" class="form-control" name="result" id="result" value="" required>--}}
+{{--    </div>--}}
+    <div class="col-md-3 mb-3" style="padding-top: 13px;">
+
+        <div class="input-group ">
+            <label style="font-weight: bold;" class="input-group-text" for="result">{{__('coach::view.mentor_rating')}}</label>
+            <input type="text" class="form-control" name="result" id="result" value="" required="">
+
+
+        </div>
+    </div>
+
+    <div class="col-md-9 mb-3">
 
         <button type="submit" class="btn btn-primary">{{__('coach::button.submit')}}</button>
 
@@ -90,6 +101,12 @@
 @stop
 
 @section('js')
+    <script>
+    $("textarea[name='comment']").on("input", function () {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+    });
+
     $(document).ready(function () {
         $('.form-check-input').change(function(){
             let count = $('.form-check-input').length;
@@ -97,5 +114,5 @@
             $('.rating_current').text(Math.round(count_check*100/count));
         });
     });
-
+    </script>
 @append
